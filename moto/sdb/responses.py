@@ -47,3 +47,17 @@ class SimpleDBResponse(BaseResponse):
             domain_name=domain_name, item_name=item_name, attributes=attributes
         )
         return EmptyResult()
+
+    def domain_metadata(self) -> ActionResult:
+        domain_name = self._get_param("DomainName")
+        metadata = self.sdb_backend.domain_metadata(domain_name=domain_name)
+        result = {
+            "ItemCount": metadata["item_count"],
+            "ItemNamesSizeBytes": metadata["item_names_size_bytes"],
+            "AttributeNameCount": metadata["attribute_name_count"],
+            "AttributeNamesSizeBytes": metadata["attribute_names_size_bytes"],
+            "AttributeValueCount": metadata["attribute_value_count"],
+            "AttributeValuesSizeBytes": metadata["attribute_values_size_bytes"],
+            "Timestamp": 1225486466,
+        }
+        return ActionResult(result)
