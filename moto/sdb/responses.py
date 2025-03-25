@@ -50,6 +50,12 @@ class SimpleDBResponse(BaseResponse):
         template = self.response_template(PUT_ATTRIBUTES_TEMPLATE)
         return template.render()
 
+    def domain_metadata(self) -> str:
+        domain_name = self._get_param("DomainName")
+        metadata = self.sdb_backend.domain_metadata(domain_name=domain_name)
+        template = self.response_template(DOMAIN_METADATA_TEMPLATE)
+        return template.render(metadata=metadata)
+
 
 CREATE_DOMAIN_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <CreateDomainResult  xmlns="http://sdb.amazonaws.com/doc/2009-04-15/"></CreateDomainResult>
@@ -92,3 +98,20 @@ GET_ATTRIBUTES_TEMPLATE = """<GetAttributesResponse xmlns="http://sdb.amazonaws.
 {% endfor %}
   </GetAttributesResult>
 </GetAttributesResponse>"""
+
+
+DOMAIN_METADATA_TEMPLATE = """<DomainMetadataResponse xmlns="http://sdb.amazonaws.com/doc/2009-04-15/">
+  <DomainMetadataResult>
+    <ItemCount>{{ metadata.item_count }}</ItemCount>
+    <ItemNamesSizeBytes>{{ metadata.item_names_size_bytes }}</ItemNamesSizeBytes>
+    <AttributeNameCount >{{ metadata.attribute_name_count }}</AttributeNameCount >
+    <AttributeNamesSizeBytes>{{ metadata.attribute_names_size_bytes }}</AttributeNamesSizeBytes>
+    <AttributeValueCount>{{ metadata.attribute_value_count }}</AttributeValueCount>
+    <AttributeValuesSizeBytes>{{ metadata.attribute_values_size_bytes }}</AttributeValuesSizeBytes>
+    <Timestamp>1225486466</Timestamp>
+  </DomainMetadataResult>
+  <ResponseMetadata>
+    	<RequestId>b1e8f1f7-42e9-494c-ad09-2674e557526d</RequestId>
+    	<BoxUsage>0.0000219907</BoxUsage>
+  </ResponseMetadata>
+</DomainMetadataResponse>"""
