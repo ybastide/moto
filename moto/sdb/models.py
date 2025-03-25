@@ -100,5 +100,30 @@ class SimpleDBBackend(BaseBackend):
         domain = self._get_domain(domain_name)
         domain.put(item_name, attributes)
 
+    def domain_metadata(self, domain_name: str) -> dict[str, Any]:
+        self._validate_domain_name(domain_name)
+        domain = self._get_domain(domain_name)
+        item_names_size_bytes = 0
+        attribute_name_count = 0
+        attribute_names_size_bytes = 0
+        attribute_value_count = 0
+        attribute_values_size_bytes = 0
+        for name, item in domain.items.items():
+            item_names_size_bytes += len(name)
+            with item.lock:
+                for attr in item.attributes:
+                    attribute_name_count += 1
+                    attribute_names_size_bytes += len(attr["Name"])
+                    attribute_value_count += 1
+                    attribute_values_size_bytes += len(attr["Value"])
+        return {
+            "item_count": len(domain.items),
+            "item_names_size_bytes": item_names_size_bytes,
+            "attribute_name_count": attribute_name_count,
+            "attribute_names_size_bytes": attribute_names_size_bytes,
+            "attribute_value_count": attribute_value_count,
+            "attribute_values_size_bytes": attribute_values_size_bytes,
+        }
+
 
 sdb_backends = BackendDict(SimpleDBBackend, "sdb")
