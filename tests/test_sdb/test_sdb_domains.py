@@ -1,3 +1,5 @@
+from unittest.mock import ANY
+
 import boto3
 import pytest
 from botocore.exceptions import ClientError
@@ -65,3 +67,25 @@ def test_delete_domain_invalid():
     assert err["Code"] == "InvalidParameterValue"
     assert err["Message"] == "Value (a) for parameter DomainName is invalid. "
     assert "BoxUsage" in err
+
+
+@mock_aws
+def test_domain_metadata():
+    name = "mydomain"
+    sdb = boto3.client("sdb", region_name="eu-west-1")
+    sdb.create_domain(DomainName=name)
+    sdb.put_attributes(
+        DomainName=name, ItemName="asdf", Attributes=[{"Name": "abc", "Value": "de"}]
+    )
+    metadata = sdb.domain_metadata(DomainName=name)
+    expected = {
+        "ItemCount": 1,
+        "ItemNamesSizeBytes": 4,
+        "AttributeNameCount": 1,
+        "AttributeNamesSizeBytes": 3,
+        "AttributeValueCount": 1,
+        "AttributeValuesSizeBytes": 2,
+        "Timestamp": ANY,
+        "ResponseMetadata": ANY,
+    }
+    assert metadata == expected
