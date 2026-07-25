@@ -65,3 +65,21 @@ def test_delete_domain_invalid():
     assert err["Code"] == "InvalidParameterValue"
     assert err["Message"] == "Value (a) for parameter DomainName is invalid. "
     assert "BoxUsage" in err
+
+
+@mock_aws
+def test_domain_metadata():
+    name = "mydomain"
+    sdb = boto3.client("sdb", region_name="eu-west-1")
+    sdb.create_domain(DomainName=name)
+    sdb.put_attributes(
+        DomainName=name, ItemName="asdf", Attributes=[{"Name": "abc", "Value": "de"}]
+    )
+    metadata = sdb.domain_metadata(DomainName=name)
+    assert metadata["ResponseMetadata"]["HTTPStatusCode"] == 200
+    assert metadata["ItemCount"] == 1
+    assert metadata["ItemNamesSizeBytes"] == 4
+    assert metadata["AttributeNameCount"] == 1
+    assert metadata["AttributeNamesSizeBytes"] == 3
+    assert metadata["AttributeValueCount"] == 1
+    assert metadata["AttributeValuesSizeBytes"] == 2
